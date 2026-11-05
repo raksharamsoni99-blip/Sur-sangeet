@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09090b">
+  <meta name="description" content="MelodyHub par apne pasandida retro, 90s aur naye gaane suniye.">
+  <title>MelodyHub — Retro, 90s & New Hits</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+    .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #374151 transparent; }
+    .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+    input[type="range"] { accent-color: #a855f7; }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-950 pb-36 text-white">
+  <header class="sticky top-0 z-40 flex flex-col items-center justify-between gap-4 border-b border-gray-800 bg-gray-900 px-5 py-4 shadow-md md:flex-row md:px-8">
+    <a href="#" class="flex items-center gap-3" aria-label="MelodyHub home">
+      <span class="rounded-xl bg-gradient-to-tr from-purple-600 to-pink-500 p-2.5 shadow-lg shadow-purple-500/30"><i class="fa-solid fa-music text-xl"></i></span>
+      <span><span class="block bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-xl font-bold tracking-wide text-transparent">MelodyHub</span><span class="block text-xs text-gray-400">Retro, 90s & Latest Hits Player</span></span>
+    </a>
+    <div class="flex w-full items-center gap-3 md:w-auto">
+      <label class="relative w-full md:w-80">
+        <span class="sr-only">Gaana ya artist khojein</span>
+        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-gray-400"></i>
+        <input type="search" id="searchInput" placeholder="Search song or artist..." class="w-full rounded-full border border-gray-700 bg-gray-800 py-2.5 pl-11 pr-4 text-sm outline-none transition focus:border-purple-500">
+      </label>
+      <label class="flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-2.5 text-xs font-semibold shadow-lg shadow-purple-600/20 transition hover:from-purple-500 hover:to-indigo-500">
+        <i class="fa-solid fa-cloud-arrow-up"></i> Upload MP3
+        <input type="file" id="localAudioInput" accept="audio/*,.mp3" class="hidden" multiple>
+      </label>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-5 py-8 md:px-8">
+    <div class="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+      <nav aria-label="Song categories" class="custom-scrollbar flex w-full items-center gap-3 overflow-x-auto pb-2 md:w-auto">
+        <button data-filter="all" class="filter-btn whitespace-nowrap rounded-full bg-purple-600 px-5 py-2 text-xs font-semibold text-white shadow-md shadow-purple-600/20">Sabhi Gaane</button>
+        <button data-filter="new" class="filter-btn whitespace-nowrap rounded-full bg-gray-800 px-5 py-2 text-xs font-semibold text-gray-300 transition hover:bg-gray-700">🔥 Naye Hits</button>
+        <button data-filter="90s" class="filter-btn whitespace-nowrap rounded-full bg-gray-800 px-5 py-2 text-xs font-semibold text-gray-300 transition hover:bg-gray-700">📻 90s Hits</button>
+        <button data-filter="retro" class="filter-btn whitespace-nowrap rounded-full bg-gray-800 px-5 py-2 text-xs font-semibold text-gray-300 transition hover:bg-gray-700">📀 Classic Retro</button>
+        <button data-filter="uploaded" class="filter-btn whitespace-nowrap rounded-full bg-gray-800 px-5 py-2 text-xs font-semibold text-gray-300 transition hover:bg-gray-700">📁 Mere Uploaded</button>
+      </nav>
+      <button id="newPlaylistBtn" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-purple-500/30 bg-gray-800 px-4 py-2 text-xs font-semibold text-purple-400 transition hover:bg-gray-700"><i class="fa-solid fa-plus"></i> New Playlist</button>
+    </div>
+
+    <section id="playlistsContainer" class="mb-6 hidden items-center gap-3 overflow-x-auto pb-2">
+      <span class="whitespace-nowrap text-xs font-medium text-gray-400">Meri Playlists:</span>
+      <div id="playlistBadges" class="flex items-center gap-2"></div>
+    </section>
+    <section aria-label="Songs" id="songsGrid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"></section>
+  </main>
+
+  <section id="playerBar" aria-label="Audio player" class="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-800 bg-gray-900/95 px-5 py-4 shadow-2xl backdrop-blur-md md:px-8">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 md:flex-row">
+      <div class="flex w-full items-center gap-4 md:w-1/4">
+        <img id="playerCover" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=120&auto=format&fit=crop&q=80" alt="Album art" class="h-14 w-14 rounded-lg object-cover shadow-md">
+        <div class="min-w-0 flex-1"><h2 id="playerTitle" class="truncate text-sm font-semibold">Gaana Chuniye</h2><p id="playerArtist" class="truncate text-xs text-gray-400">MelodyHub</p></div>
+        <button id="playerFavBtn" aria-label="Favorite song" class="text-gray-400 transition hover:text-pink-500"><i id="playerFavIcon" class="fa-regular fa-heart text-lg"></i></button>
+      </div>
+      <div class="flex w-full flex-col items-center space-y-2 md:w-2/4">
+        <div class="flex items-center space-x-6">
+          <button id="shuffleBtn" aria-label="Shuffle" aria-pressed="false" class="text-sm text-gray-400 transition hover:text-white"><i class="fa-solid fa-shuffle"></i></button>
+          <button id="prevBtn" aria-label="Previous song" class="text-lg text-gray-300 transition hover:text-white"><i class="fa-solid fa-backward-step"></i></button>
+          <button id="playPauseBtn" aria-label="Play" class="flex h-10 w-10 items-center justify-center rounded-full bg-purple-600 text-white shadow-lg shadow-purple-600/40 transition hover:scale-105 hover:bg-purple-500"><i id="playPauseIcon" class="fa-solid fa-play"></i></button>
+          <button id="nextBtn" aria-label="Next song" class="text-lg text-gray-300 transition hover:text-white"><i class="fa-solid fa-forward-step"></i></button>
+          <button id="repeatBtn" aria-label="Repeat" aria-pressed="false" class="text-sm text-gray-400 transition hover:text-white"><i class="fa-solid fa-repeat"></i></button>
+        </div>
+        <div class="flex w-full items-center space-x-3">
+          <span id="currentTime" class="w-10 text-right text-xs text-gray-400">0:00</span>
+          <input type="range" id="progressBar" aria-label="Song progress" min="0" max="100" value="0" class="h-1 w-full cursor-pointer appearance-none rounded-lg bg-gray-700">
+          <span id="durationTime" class="w-10 text-xs text-gray-400">0:00</span>
+        </div>
+      </div>
+      <div class="flex w-full items-center justify-end gap-3 md:w-1/4"><i class="fa-solid fa-volume-high text-sm text-gray-400"></i><input type="range" id="volumeBar" aria-label="Volume" min="0" max="1" step="0.05" value="1" class="h-1 w-24 cursor-pointer appearance-none rounded-lg bg-gray-700"></div>
+    </div>
+  </section>
+  <audio id="audioElement" preload="metadata"></audio>
+  <div id="toast" role="status" aria-live="polite" class="pointer-events-none fixed bottom-36 left-1/2 z-[60] hidden -translate-x-1/2 rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-sm shadow-xl"></div>
+
+  <script>
+    const coverFallback = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&auto=format&fit=crop&q=80';
+    const songs = [
+      { id: 1, title: 'Kesariya (Lofi Beats)', artist: 'Arijit Singh, Pritam', category: 'new', cover: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&auto=format&fit=crop&q=80', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', favorite: false },
+      { id: 2, title: 'Apna Bana Le', artist: 'Arijit Singh, Sachin-Jigar', category: 'new', cover: 'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=300&auto=format&fit=crop&q=80', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', favorite: false },
+      { id: 3, title: 'Raataan Lambiyan', artist: 'Jubin Nautiyal, Asees Kaur', category: 'new', cover: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=300&auto=format&fit=crop&q=80', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3', favorite: false },
+      { id: 4, title: 'O Maahi', artist: 'Arijit Singh, Pritam', category: 'new', cover: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300&auto=format&fit=crop&q=80', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3', favorite: false },
+      { id: 5, title: 'Tujhe Dekha Toh Yeh Jaana Sanam', artist: 'Kumar Sanu, Lata Mangeshkar', category: '90s', cover: 'https://images.unsplash.com/photo-1526478806334-5fd488fcaabc?w=300&auto=format&fit=crop&q=80', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3', favorite: true },
+      { id: 6, title: 'Tip Tip Barsa Paani', artist: 'Udit Narayan, Alka Yagnik', category: '90s', cover: 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300&auto=format&fit=crop&q=80', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3', favorite: false },
+      { id: 7, title: 'Pehla Nasha', artist: 'Udit Narayan, Sadhana Sargam', category: '90s', cover: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&auto=format&fit=crop&q=80', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3', favorite: false },
+      { id: 8, title: 'Mera Dil Bhi Kitna Pagal Hai', artist: 'Kumar Sanu, Alka Yagnik', category: '90s', cover: 'https://images.unsplash.com/photo-1453090927415-5f45085b65c0?w=300&auto=format&fit=crop&q=80', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3', favorite: false },
+      { id: 9, title: 'Lag Jaa Gale', artist: 'Lata Mangeshkar, Madan Mohan', category: 'retro', cover: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=300&auto=format&fit=crop&q=80', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', favorite: true },
+      { id: 10, title: 'Chura Liya Hai Tumne', artist: 'Mohammed Rafi, Asha Bhosle', category: 'retro', cover: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&auto=format&fit=crop&q=80', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', favorite: false },
+      { id: 11, title: 'Rimjhim Gire Sawan', artist: 'Kishore Kumar, R.D. Burman', category: 'retro', cover: 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300&auto=format&fit=crop&q=80', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3', favorite: true },
+      { id: 12, title: 'Mere Sapno Ki Rani', artist: 'Kishore Kumar', category: 'retro', cover: 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=300&auto=format&fit=crop&q=80', src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3', favorite: false }
+    ];
+    let playlists = {};
+    let currentSongIndex = -1;
+    let currentFilter = 'all';
+    let isShuffle = false;
+    let isRepeat = false;
+    let toastTimer;
+
+    const audio = document.getElementById('audioElement');
+    const grid = document.getElementById('songsGrid');
+    const searchInput = document.getElementById('searchInput');
+    const progressBar = document.getElementById('progressBar');
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    }
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.add('hidden'), 2800);
+    }
+    function getFilteredSongs() {
+      const query = searchInput.value.trim().toLocaleLowerCase();
+      return songs.filter(song => {
+        const matchesCategory = currentFilter === 'all' || song.category === currentFilter;
+        const matchesQuery = !query || `${song.title} ${song.artist}`.toLocaleLowerCase().includes(query);
+        return matchesCategory && matchesQuery;
+      });
+    }
+    function renderSongs(list = getFilteredSongs()) {
+      if (!list.length) {
+        grid.innerHTML = '<div class="col-span-full py-16 text-center text-gray-500"><i class="fa-solid fa-music mb-3 block text-3xl"></i>Koi gaana nahi mila.</div>';
+        return;
+      }
+      grid.innerHTML = list.map(song => {
+        const index = songs.findIndex(item => item.id === song.id);
+        const isCurrent = currentSongIndex === index;
+        const category = song.category === 'retro' ? ['bg-amber-500/80', 'Classic Retro'] : song.category === '90s' ? ['bg-teal-500/80', '90s Hit'] : song.category === 'uploaded' ? ['bg-purple-600/80', 'Uploaded MP3'] : ['bg-pink-500/80', 'New Hit'];
+        return `<article class="group flex flex-col justify-between rounded-2xl border ${isCurrent ? 'border-purple-500 shadow-lg shadow-purple-500/20' : 'border-gray-800'} bg-gray-900 p-4 transition hover:border-gray-700">
+          <div class="relative mb-4 aspect-square overflow-hidden rounded-xl bg-gray-800">
+            <img src="${escapeHTML(song.cover)}" alt="${escapeHTML(song.title)} album art" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" onerror="this.src='${coverFallback}'">
+            <button data-play="${index}" aria-label="Play ${escapeHTML(song.title)}" class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition duration-300 group-hover:opacity-100"><span class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-600 text-white shadow-xl"><i class="fa-solid ${isCurrent && !audio.paused ? 'fa-pause' : 'fa-play'}"></i></span></button>
+            <span class="absolute left-3 top-3 rounded-md ${category[0]} px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">${category[1]}</span>
+          </div>
+          <div><h3 class="mb-1 truncate text-sm font-semibold" title="${escapeHTML(song.title)}">${escapeHTML(song.title)}</h3><p class="mb-3 truncate text-xs text-gray-400">${escapeHTML(song.artist)}</p></div>
+          <div class="flex items-center justify-between border-t border-gray-800/60 pt-3">
+            <div class="flex items-center gap-4"><button data-favorite="${index}" aria-label="${song.favorite ? 'Remove from' : 'Add to'} favorites" class="transition hover:text-pink-500"><i class="fa-${song.favorite ? 'solid text-pink-500' : 'regular text-gray-400'} fa-heart"></i></button><button data-add="${song.id}" aria-label="Add to playlist" title="Add to Playlist" class="text-gray-400 transition hover:text-purple-400"><i class="fa-solid fa-list"></i></button></div>
+            <button data-play="${index}" class="text-xs font-medium text-purple-400 transition hover:text-purple-300">${isCurrent && !audio.paused ? 'Playing...' : 'Play Now'}</button>
+          </div>
+        </article>`;
+      }).join('');
+    }
+    function filterSongs(category) {
+      currentFilter = category;
+      document.querySelectorAll('.filter-btn').forEach(button => {
+        const active = button.dataset.filter === category;
+        button.classList.toggle('bg-purple-600', active);
+        button.classList.toggle('text-white', active);
+        button.classList.toggle('shadow-md', active);
+        button.classList.toggle('shadow-purple-600/20', active);
+        button.classList.toggle('bg-gray-800', !active);
+        button.classList.toggle('text-gray-300', !active);
+      });
+      renderSongs();
+    }
+    function updatePlayerInfo() {
+      if (currentSongIndex < 0 || !songs[currentSongIndex]) return;
+      const song = songs[currentSongIndex];
+      document.getElementById('playerCover').src = song.cover;
+      document.getElementById('playerTitle').textContent = song.title;
+      document.getElementById('playerArtist').textContent = song.artist;
+      document.getElementById('playerFavIcon').className = `${song.favorite ? 'fa-solid text-pink-500' : 'fa-regular'} fa-heart text-lg`;
+    }
+    async function playSong(index) {
+      const song = songs[index];
+      if (!song) return;
+      currentSongIndex = index;
+      audio.src = song.src;
+      updatePlayerInfo();
+      try {
+        await audio.play();
+      } catch (error) {
+        showToast('Gaana play nahi ho paya. Audio link ya file check karein.');
+      }
+      updatePlayUI();
+      renderSongs();
+    }
+    function updatePlayUI() {
+      const playing = !audio.paused;
+      document.getElementById('playPauseIcon').className = `fa-solid ${playing ? 'fa-pause' : 'fa-play'}`;
+      document.getElementById('playPauseBtn').setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    }
+    function togglePlayPause() {
+      if (currentSongIndex < 0) { playSong(0); return; }
+      if (audio.paused) audio.play().catch(() => showToast('Playback shuru nahi ho paya.'));
+      else audio.pause();
+    }
+    function nextSong() {
+      if (!songs.length) return;
+      const next = isShuffle ? Math.floor(Math.random() * songs.length) : (currentSongIndex + 1 + songs.length) % songs.length;
+      playSong(next);
+    }
+    function previousSong() {
+      if (!songs.length) return;
+      if (audio.currentTime > 3) { audio.currentTime = 0; return; }
+      playSong((currentSongIndex - 1 + songs.length) % songs.length);
+    }
+    function toggleFavorite(index) {
+      if (!songs[index]) return;
+      songs[index].favorite = !songs[index].favorite;
+      if (index === currentSongIndex) updatePlayerInfo();
+      renderSongs();
+    }
+    function renderPlaylists() {
+      const container = document.getElementById('playlistsContainer');
+      const badges = document.getElementById('playlistBadges');
+      const names = Object.keys(playlists);
+      container.classList.toggle('hidden', names.length === 0);
+      container.classList.toggle('flex', names.length > 0);
+      badges.innerHTML = names.map(name => `<button data-playlist="${escapeHTML(name)}" class="flex items-center gap-2 whitespace-nowrap rounded-full border border-purple-600/40 bg-purple-950/60 px-3 py-1 text-xs font-medium text-purple-300 transition hover:bg-purple-900"><i class="fa-solid fa-music text-[10px]"></i>${escapeHTML(name)} (${playlists[name].length})</button>`).join('');
+    }
+    function addToPlaylist(songId) {
+      const names = Object.keys(playlists);
+      if (!names.length) { showToast('Pehle New Playlist button se playlist banayein.'); return; }
+      const name = prompt(`Kis playlist mein add karna hai?\n${names.join(', ')}`);
+      if (!name) return;
+      if (!Object.hasOwn(playlists, name)) { showToast('Playlist ka naam list mein nahi mila.'); return; }
+      if (playlists[name].includes(songId)) { showToast('Yeh gaana playlist mein pehle se hai.'); return; }
+      playlists[name].push(songId);
+      renderPlaylists();
+      showToast(`Gaana "${name}" playlist mein add ho gaya!`);
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(button => button.addEventListener('click', () => filterSongs(button.dataset.filter)));
+    searchInput.addEventListener('input', () => renderSongs());
+    grid.addEventListener('click', event => {
+      const playButton = event.target.closest('[data-play]');
+      const favoriteButton = event.target.closest('[data-favorite]');
+      const addButton = event.target.closest('[data-add]');
+      if (playButton) {
+        const index = Number(playButton.dataset.play);
+        if (index === currentSongIndex && !audio.paused) audio.pause(); else playSong(index);
+      } else if (favoriteButton) toggleFavorite(Number(favoriteButton.dataset.favorite));
+      else if (addButton) addToPlaylist(Number(addButton.dataset.add));
+    });
+    document.getElementById('newPlaylistBtn').addEventListener('click', () => {
+      const name = prompt('Apni nayi playlist ka naam likhein:');
+      if (!name || !name.trim()) return;
+      const cleanName = name.trim();
+      if (Object.hasOwn(playlists, cleanName)) { showToast('Is naam ki playlist pehle se maujood hai.'); return; }
+      playlists[cleanName] = [];
+      renderPlaylists();
+      showToast(`Playlist "${cleanName}" ban gayi!`);
+    });
+    document.getElementById('playlistBadges').addEventListener('click', event => {
+      const button = event.target.closest('[data-playlist]');
+      if (!button) return;
+      const playlistSongs = songs.filter(song => playlists[button.dataset.playlist].includes(song.id));
+      renderSongs(playlistSongs);
+    });
+    document.getElementById('localAudioInput').addEventListener('change', event => {
+      const files = Array.from(event.target.files || []);
+      files.forEach(file => songs.unshift({ id: Date.now() + Math.random(), title: file.name.replace(/\.[^/.]+$/, ''), artist: 'Local Track', category: 'uploaded', cover: coverFallback, src: URL.createObjectURL(file), favorite: false }));
+      if (files.length) { filterSongs('uploaded'); showToast(`${files.length} gaane safaltapurvak add ho gaye!`); }
+      event.target.value = '';
+    });
+    document.getElementById('playPauseBtn').addEventListener('click', togglePlayPause);
+    document.getElementById('prevBtn').addEventListener('click', previousSong);
+    document.getElementById('nextBtn').addEventListener('click', nextSong);
+    document.getElementById('playerFavBtn').addEventListener('click', () => { if (currentSongIndex >= 0) toggleFavorite(currentSongIndex); });
+    document.getElementById('shuffleBtn').addEventListener('click', event => {
+      isShuffle = !isShuffle;
+      event.currentTarget.classList.toggle('text-purple-400', isShuffle);
+      event.currentTarget.classList.toggle('text-gray-400', !isShuffle);
+      event.currentTarget.setAttribute('aria-pressed', String(isShuffle));
+    });
+    document.getElementById('repeatBtn').addEventListener('click', event => {
+      isRepeat = !isRepeat;
+      event.currentTarget.classList.toggle('text-purple-400', isRepeat);
+      event.currentTarget.classList.toggle('text-gray-400', !isRepeat);
+      event.currentTarget.setAttribute('aria-pressed', String(isRepeat));
+    });
+    audio.addEventListener('play', () => { updatePlayUI(); renderSongs(); });
+    audio.addEventListener('pause', () => { updatePlayUI(); renderSongs(); });
+    audio.addEventListener('timeupdate', () => {
+      if (!Number.isFinite(audio.duration)) return;
+      progressBar.value = String((audio.currentTime / audio.duration) * 100);
+      document.getElementById('currentTime').textContent = formatTime(audio.currentTime);
+      document.getElementById('durationTime').textContent = formatTime(audio.duration);
+    });
+    audio.addEventListener('loadedmetadata', () => { document.getElementById('durationTime').textContent = formatTime(audio.duration); });
+    audio.addEventListener('ended', () => isRepeat ? (audio.currentTime = 0, audio.play()) : nextSong());
+    audio.addEventListener('error', () => { if (currentSongIndex >= 0) showToast('Audio load nahi hua. Dobara try karein.'); });
+    progressBar.addEventListener('input', () => { if (Number.isFinite(audio.duration)) audio.currentTime = (Number(progressBar.value) / 100) * audio.duration; });
+    document.getElementById('volumeBar').addEventListener('input', event => { audio.volume = Number(event.target.value); });
+    function formatTime(seconds) {
+      if (!Number.isFinite(seconds)) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${String(secs).padStart(2, '0')}`;
+    }
+    renderSongs();
+  </script>
+</body>
+</html>
